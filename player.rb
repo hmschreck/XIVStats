@@ -38,27 +38,8 @@ class Player
     p360days
     p450days
     p630days
-    prearr
-    prehw
-    artbook
-    beforemeteor
-    beforethefall
-    soundtrack
-    saweternalbond
-    sightseeing
     arr_25_complete
-    comm50
-    moogleplush
-    hildibrand
-    ps4collectors
     dideternalbond
-    arrcollector
-    kobold
-    sahagin
-    amaljaa
-    sylph
-    hw_complete
-    hw_31_complete
   ]
 
   def initialize

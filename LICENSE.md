@@ -2,6 +2,9 @@ Copyright (c) 2015, Jonathan Price
 Copyright (c) 2015, Peter Reid
 All rights reserved.
 
+Modifications from the original are the work of Harold M. Schreckengost,
+and freely given within the bounds of the following, original, license.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 

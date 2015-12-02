@@ -1,17 +1,28 @@
 #!/usr/bin/env ruby
 
+#(HS)This is s version of the standard XIV_Stats.rb script with Harold Schreckengost's modifications to make the pulls faster and the resulting file more in line with his needs
+
+#(HS) This is designed to be run with multiple threads at once.  The simplest way to call it is to break the total size you wish to call into chunks, and distribute the chunks between databases
+#(HS) Theoretically, a smaller chunk with more processes will reduce the overall time taken.  However, the database throughput limitations impact it.
+#(HS) On my VPS, using 6 databases, with a chunk size of 175k IDs, was approaching the upper limit for that number of databases; more databases may allow smaller chunks (and faster processing), up to a limit.
+
+
+
 class XIVStats
 
   def initialize
     # Set to the desired path for the database to be written to
     # If no directory specified, pwd is used
-    @db_path = "players.db"
+
+    #(HS)- Using multiple databases is a bit hacky, but it allows for a significant performance gain
+    @databaseNo = ARGV[2]
+    @db_path = "players"+@databaseNo+".db"
 
     require 'open-uri'
     require 'sqlite3'
     require_relative 'player'
     if ARGV.empty?
-      puts "Usage: xiv_stats.rb <lowest_id> <highest_id>"
+      puts "Usage: xiv_stats.rb <lowest_id> <highest_id> <database number>"
       exit 1
     end
     @lowest_id = ARGV[0].to_i
@@ -196,10 +207,8 @@ class XIVStats
       ,'#{player.level_machinist}','#{player.level_astrologian}','#{player.level_carpenter}','#{player.level_blacksmith}','#{player.level_armorer}'
       ,'#{player.level_goldsmith}','#{player.level_leatherworker}','#{player.level_weaver}','#{player.level_alchemist}','#{player.level_culinarian}'
       ,'#{player.level_miner}','#{player.level_botanist}','#{player.level_fisher}','#{player.p30days}','#{player.p60days}','#{player.p90days}','#{player.p180days}'
-      ,'#{player.p270days}','#{player.p360days}','#{player.p450days}','#{player.p630days}','#{player.prearr}','#{player.prehw}','#{player.artbook}'
-      ,'#{player.beforemeteor}','#{player.beforethefall}','#{player.soundtrack}','#{player.saweternalbond}','#{player.sightseeing}'
-      ,'#{player.arr_25_complete}','#{player.comm50}','#{player.moogleplush}','#{player.hildibrand}','#{player.ps4collectors}'
-      ,'#{player.dideternalbond}','#{player.arrcollector}','#{player.kobold}','#{player.sahagin}','#{player.amaljaa}','#{player.sylph}');")
+      ,'#{player.p270days}','#{player.p360days}','#{player.p450days}','#{player.p630days}'
+      ,'#{player.arr_25_complete}','#{player.dideternalbond}');")
   end
 
   # Main function. Creates the database, cycles through character profiles and 
@@ -215,9 +224,7 @@ class XIVStats
       ,level_astrologian INTEGER,level_carpenter INTEGER,level_blacksmith INTEGER,level_armorer INTEGER,level_goldsmith INTEGER
       ,level_leatherworker INTEGER,level_weaver INTEGER,level_alchemist INTEGER,level_culinarian INTEGER,level_miner INTEGER
       ,level_botanist INTEGER,level_fisher INTEGER,p30days INTEGER, p60days INTEGER, p90days INTEGER, p180days INTEGER, p270days INTEGER
-      ,p360days INTEGER,p450days INTEGER,p630days INTEGER,prearr INTEGER,prehw INTEGER, artbook INTEGER, beforemeteor INTEGER, beforethefall INTEGER
-      ,soundtrack INTEGER,saweternalbond INTEGER,sightseeing INTEGER,arr_25_complete INTEGER,comm50 INTEGER,moogleplush INTEGER
-      ,hildibrand INTEGER, ps4collectors INTEGER, dideternalbond INTEGER, arrcollector INTEGER, kobold INTEGER, sahagin INTEGER, amaljaa INTEGER, sylph INTEGER);")    
+      ,p360days INTEGER,p450days INTEGER,p630days INTEGER,arr_25_complete INTEGER, dideternalbond INTEGER);")    
 
     # Do the player IDs in the range specified at the command-line
     for i in @lowest_id..@highest_id
@@ -229,6 +236,7 @@ class XIVStats
         player.race = get_race(page)
         player.gender = get_gender(page)
         player.grand_company = get_grand_company(page) 
+        # taking sub data because, with two data sets, sufficiently far apart, we may be able to determine active subscriptions, with some margin of error
         player.p30days = get_minion(page, "Wind-up Cursor")
         player.p60days = get_minion(page, "Black Chocobo Chick")
         player.p90days = get_minion(page, "Beady Eye")
@@ -237,27 +245,8 @@ class XIVStats
         player.p360days = get_minion(page, "Wind-up Odin")
         player.p450days = get_minion(page, "Wind-up Goblin")
         player.p630days = get_minion(page, "Wind-up Nanamo")
-        player.prearr = get_minion(page, "Cait Sith Doll")
-        player.prehw = get_minion(page, "Chocobo Chick Courier")
-        player.artbook = get_minion(page, "Model Enterprise")
-        player.beforemeteor = get_minion(page, "Wind-up Dalamud")
-        player.beforethefall = get_minion(page, "Set Of Primogs")
-        player.soundtrack = get_minion(page, "Wind-up Bahamut")
-        player.saweternalbond = get_minion(page, "Demon Box")
-        player.sightseeing = get_minion(page, "Fledgling Apkallu")
         player.arr_25_complete = get_minion(page, "Midgardsormr")
-        player.comm50 = get_minion(page, "Princely Hatchling")
-        player.moogleplush = get_minion(page, "Wind-up Delivery Moogle")
-        player.hildibrand = get_minion(page, "Wind-up Gentleman")
-        player.ps4collectors = get_minion(page, "Wind-up Moogle")
-        player.hw_31_complete = get_minion(page, "")
         player.dideternalbond = get_mount(page, "Ceremony Chocobo")
-        player.arrcollector = get_mount(page, "Coeurl")
-        player.kobold = get_mount(page, "Bomb Palanquin")
-        player.sahagin = get_mount(page, "Cavalry Elbst")
-        player.amaljaa = get_mount(page, "Cavalry Drake")
-        player.sylph = get_mount(page, "Laurel Goobbue")
-        player.hw_complete = get_mount(page, "Migardsormr")
         levels = get_levels(page)
 
         player.level_gladiator = levels[0]
@@ -285,7 +274,7 @@ class XIVStats
         player.level_fisher = levels[22]
 
 #        puts "ID: #{i} | Name: #{player.player_name} | Realm: #{player.realm} | Race: #{player.race} | Gender: #{player.gender} | GC: #{player.grand_company}"
-        puts "ID: #{i} | Name: #{player.player_name} | Realm: #{player.realm} | Race: #{player.race} | Gender: #{player.gender} | 30Days: #{player.p30days}"
+      #  puts "ID: #{i} | Name: #{player.player_name} | Realm: #{player.realm} | Race: #{player.race} | Gender: #{player.gender} | 30Days: #{player.p30days}"
 	write_to_db(player)
 
         # DEBUG
