@@ -1,4 +1,4 @@
-This is a smaller-out, parallel-focused version of Pricetx's script.
+This is a smaller-output, parallel-focused version of Pricetx's script.
 
 The easiest way to call this script from a bash shell is:
 ruby xiv_stats.rb <Chunk_start> <Chunk_end> <database number> &
