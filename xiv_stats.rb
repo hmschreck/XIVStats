@@ -199,8 +199,7 @@ class XIVStats
       , level_lancer, level_archer, level_rogue, level_conjurer, level_thaumaturge, level_arcanist, level_astrologian, level_darkknight, level_machinist, level_carpenter
       , level_blacksmith, level_armorer, level_goldsmith, level_leatherworker, level_weaver, level_alchemist
       , level_culinarian, level_miner, level_botanist, level_fisher, p30days, p60days, p90days, p180days, p270days, p360days, p450days, p630days
-      , prearr, prehw, artbook, beforemeteor, beforethefall, soundtrack, saweternalbond, sightseeing, arr_25_complete, comm50, moogleplush
-      , hildibrand, ps4collectors, dideternalbond, arrcollector, kobold, sahagin, amaljaa, sylph) 
+      ,  arr_25_complete, dideternalbond) 
       values ('#{player.id}',\"#{player.player_name}\",'#{player.realm}',\"#{player.race}\",'#{player.gender}','#{player.grand_company}'
       ,'#{player.level_gladiator}','#{player.level_pugilist}','#{player.level_marauder}','#{player.level_lancer}','#{player.level_archer}'
       ,'#{player.level_rogue}','#{player.level_conjurer}','#{player.level_thaumaturge}','#{player.level_arcanist}','#{player.level_darkknight}'
